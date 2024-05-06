@@ -73,7 +73,7 @@ def main(args):
         Xs_valid = Xs_valid.dot(T)
 
     study = rfflearn.RFFSVC_tuner(train_set = (Xs_train, ys_train), valid_set = (Xs_valid, ys_valid),
-                                  tol = 1.0E-3, verbose = 0, n_jobs = int(args["--cpus"]), n_trials = int(args["--n_trials"]))
+                                  tol = 1.0E-3, verbose = 0, n_jobs = int(args["--cpus"]), n_trials = int(args["--n_trials"]), oc=True)
 
     print("study.best_params:", study.best_params)
     print("study.best_value:", study.best_value)
@@ -88,6 +88,9 @@ if __name__ == "__main__":
 
     ### Parse input arguments.
     args = docopt.docopt(__doc__)
+    args = dict({"cpu": True, "--seed": 111, "kernel" : False, '--rtype': 'rff', '--kdim': 16, '--stdev': 0.05, '--cpus': -1,
+                 '--use_fft': False, '--input': '../../dataset/mnist', '--output': 'result.pickle', '--pcadim': 32,
+                 '--kernel': 'rbf', '--gamma': 'auto', '--C': 1.0, '--oc': False, '--n_trials': 10})
 
     ### Add path to 'rfflearn/' directory.
     ### The followings are not necessary if you copied 'rfflearn/' to the current

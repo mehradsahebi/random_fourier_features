@@ -84,9 +84,11 @@ def main(args):
 
     ### Create classifier instance.
     if   args["kernel"]          : svc = skl.svm.SVC(kernel = args["--kernel"], gamma = args["--gamma"])
-    elif args["--rtype"] == "rff": svc = rfflearn.RFFSVC(dim_kernel = args["--kdim"], std_kernel = args["--stdev"], tol = 1.0E-3, n_jobs = args["--cpus"])
+    elif args["--rtype"] == "rff": svc = rfflearn.RFFSVC(dim_kernel = args["--kdim"], std_kernel = args["--stdev"], tol = 1.0E-3, n_jobs = args["--cpus"], oc=  args["--oc"])
     elif args["--rtype"] == "orf": svc = rfflearn.ORFSVC(dim_kernel = args["--kdim"], std_kernel = args["--stdev"], tol = 1.0E-3, n_jobs = args["--cpus"])
     elif args["--rtype"] == "qrf": svc = rfflearn.QRFSVC(dim_kernel = args["--kdim"], std_kernel = args["--stdev"], tol = 1.0E-3, n_jobs = args["--cpus"])
+    elif args["--rtype"] == "cus":
+        svc = rfflearn.CUSSVC(dim_kernel=args["--kdim"], std_kernel=args["--stdev"], tol=1.0E-3, n_jobs=args["--cpus"], dist = args["--dist"])
     else                         : exit("Error: First argument must be 'kernel', 'rff' or 'orf'.")
 
     ### Load training data.
@@ -120,8 +122,13 @@ def main(args):
 if __name__ == "__main__":
 
     ### Parse input arguments.
-    args = docopt.docopt(__doc__)
+    #args = docopt.docopt(__doc__)
+    args = dict({"cpu" : True, "--seed" : 111, "kernel"
+                                               "": False, '--rtype': 'rff', '--kdim': 32, '--stdev': 0.05, '--cpus': -1, '--use_fft': False, '--input': '../../dataset/mnist', '--output': 'result.pickle', '--pcadim': 32, '--kernel': 'rbf', '--gamma': 'auto', '--C': 1.0, '--oc': False})
+    import sys
+    from pathlib import Path
 
+    sys.path.append(str(Path(__file__).resolve().parents[1]))
     ### Add path to 'rfflearn/' directory.
     ### The followings are not necessary if you copied 'rfflearn/' to the current
     ### directory or other directory which is included in the Python path.

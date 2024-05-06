@@ -7,6 +7,8 @@ import functools
 
 import numpy as np
 import scipy.stats
+from itertools import product
+from random import choices
 
 
 def seed(seed):
@@ -20,7 +22,20 @@ def seed(seed):
     np.random.seed(seed)
 
 
-def get_rff_matrix(dim_in, dim_out, std):
+def get_custom_matrix(dim_in, dim_out, dist):
+    n = dist.shape[0]
+    if len(dist.shape)-1 != dim_in:
+        raise ValueError("The dimension of the distribution should be the same as the input dimension")
+    print('custom matrix is being used')
+    d = dim_in
+    temp = np.array([i - n // 2 for i in range(n)])
+    a = np.array(list(product(temp, repeat=d)))
+    population = np.arange(len(a))
+    idx = choices(population, dist.flatten(), k=dim_out)
+    return a[idx].T
+
+
+def get_rff_matrix(dim_in, dim_out, std, **args):
     """
     Generates random matrix of random Fourier features.
 
@@ -35,7 +50,7 @@ def get_rff_matrix(dim_in, dim_out, std):
     return std * np.random.randn(dim_in, dim_out)
 
 
-def get_orf_matrix(dim_in, dim_out, std):
+def get_orf_matrix(dim_in, dim_out, std, **args):
     """
     Generates random matrix of orthogonal random features.
 
@@ -51,16 +66,16 @@ def get_orf_matrix(dim_in, dim_out, std):
     W = None
 
     for _ in range(dim_out // dim_in + 1):
-        s = scipy.stats.chi.rvs(df = dim_in, size = (dim_in, ))
+        s = scipy.stats.chi.rvs(df=dim_in, size=(dim_in,))
         Q = np.linalg.qr(np.random.randn(dim_in, dim_in))[0]
         V = std * np.dot(np.diag(s), Q)
-        W = V if W is None else np.concatenate([W, V], axis = 1)
+        W = V if W is None else np.concatenate([W, V], axis=1)
 
     # Trim unnecessary part.
     return W[:dim_in, :dim_out]
 
 
-def get_qrf_matrix(dim_in, dim_out, std):
+def get_qrf_matrix(dim_in, dim_out, std, **args):
     """
     Generates random matrix for quasi-random Fourier features.
 
@@ -87,7 +102,7 @@ def get_qrf_matrix(dim_in, dim_out, std):
     import torch
 
     # Generate sobol sequence engine and throw away the first several values.
-    sobol = torch.quasirandom.SobolEngine(dim_in, scramble = True)
+    sobol = torch.quasirandom.SobolEngine(dim_in, scramble=True)
     sobol.fast_forward(QUASI_MC_SKIP)
 
     # Generate uniform random matrix.
@@ -98,28 +113,35 @@ def get_qrf_matrix(dim_in, dim_out, std):
 
     # Convert the uniform random matrix to normal random matrix.
     for index in range(0, dim_out, 2):
-        W[:, index:index+2]  = box_muller_method(W[:, index], W[:, index+1]).T
+        W[:, index:index + 2] = box_muller_method(W[:, index], W[:, index + 1]).T
 
     return std * W
 
 
-def get_matrix_generator(rand_type, std, dim_kernel, func = None):
+def get_matrix_generator(rand_type, std, dim_kernel, dist=None):
     """
     This function returns a function which generate RFF/ORF matrix.
     The usage of the returned value of this function are:
         f(dim_input:int) -> np.array with shape (dim_input, dim_kernel)
     """
-    if   rand_type == "rff": return functools.partial(get_rff_matrix, std = std, dim_out = dim_kernel)
-    elif rand_type == "orf": return functools.partial(get_orf_matrix, std = std, dim_out = dim_kernel)
-    elif rand_type == "qrf": return functools.partial(get_qrf_matrix, std = std, dim_out = dim_kernel)
-    else                   : raise RuntimeError("matrix_generator: 'rand_type' must be 'rff', 'orf', or 'qrf'.")
+    if rand_type == "rff":
+        return functools.partial(get_rff_matrix, std=std, dim_out=dim_kernel)
+    elif rand_type == "orf":
+        return functools.partial(get_orf_matrix, std=std, dim_out=dim_kernel)
+    elif rand_type == "qrf":
+        return functools.partial(get_qrf_matrix, std=std, dim_out=dim_kernel)
+    elif rand_type == "cus":
+        return functools.partial(get_custom_matrix, dim_out=dim_kernel, dist= dist)
+    else:
+        raise RuntimeError("matrix_generator: 'rand_type' must be 'rff', 'orf', or 'qrf' or 'cus'.")
 
 
 class Base:
     """
     Base class of the following RFF/ORF related classes.
     """
-    def __init__(self, rand_type, dim_kernel, std_kernel, W, b):
+
+    def __init__(self, rand_type, dim_kernel, std_kernel, W, b, dist=None):
         """
         Constractor of the Base class.
         Create random matrix generator and random matrix instance.
@@ -135,10 +157,14 @@ class Base:
             If `W` is None then the appropriate matrix will be set just before the training.
         """
         self.dim = dim_kernel
+
+        self.dist = dist
         self.s_k = std_kernel
-        self.mat = get_matrix_generator(rand_type, std_kernel, dim_kernel)
-        self.W   = W
-        self.b   = b
+        self.rand_type = rand_type
+        self.mat = get_matrix_generator(rand_type, std_kernel, dim_kernel, dist)
+        self.W = W
+        print(self.W)
+        self.b = b
 
     def conv(self, X, index=None):
         """
@@ -171,15 +197,20 @@ class Base:
             a list/tuple of integers, then generate multiple random matrixes.
         """
         # Generate matrix W.
-        if   self.W is not None         : pass
-        elif hasattr(dim_in, "__iter__"): self.W = tuple([self.mat(d) for d in dim_in])
-        else                            : self.W = self.mat(dim_in)
+        if self.W is not None:
+            pass
+        elif hasattr(dim_in, "__iter__"):
+            self.W = tuple([self.mat(dim_in[i], self.dist[i]) for i in range(len(dim_in))])
+        else:
+            self.W = self.mat(dim_in, dist=self.dist)
 
         # Generate vector b.
-        if   self.b is not None         : pass
-        elif hasattr(dim_in, "__iter__"): self.b = tuple([np.random.uniform(0, 2*np.pi, size=self.W.shape[1]) for _ in dim_in])
-        else                            : self.b = np.random.uniform(0, 2*np.pi, size=self.W.shape[1])
-
+        if self.b is not None:
+            pass
+        elif hasattr(dim_in, "__iter__"):
+            self.b = tuple([np.random.uniform(0, 2 * np.pi, size=self.W.shape[1]) for _ in dim_in])
+        else:
+            self.b = np.random.uniform(0, 2 * np.pi, size=self.W.shape[1])
 
 # Author: Tetsuya Ishikawa <tiskw111@gmail.com>
 # vim: expandtab tabstop=4 shiftwidth=4 fdm=marker

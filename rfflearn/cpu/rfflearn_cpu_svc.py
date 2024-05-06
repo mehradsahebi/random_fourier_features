@@ -5,15 +5,43 @@ Python module of support vector classification with random matrix for CPU.
 import numpy as np
 import sklearn.svm
 import sklearn.multiclass
-
+from sklearn.metrics import accuracy_score, confusion_matrix
 from .rfflearn_cpu_common import Base
+from sklearn.svm import OneClassSVM
+
+class CustomOneClassSVM(OneClassSVM):
+    """
+    Wrapper for OneClassSVM to add score method
+    """
+    def __init__(self, **args):
+        """
+        Constractor. Just call the parent class constructor.
+        """
+        super().__init__(**args)
+
+    def score(self, X, y, **args):
+        """
+        Returns evaluation score (classification accuracy).
+
+        Args:
+            X    (np.ndarray): Input matrix with shape (n_samples, n_features_input).
+            y    (np.ndarray): Output vector with shape (n_samples,).
+            args (dict)      : Extra arguments. This arguments will be passed to scikit-learn's `score` function.
+
+        Returns:
+            (float): Classification accyracy.
+        """
+        print('-------')
+        print(confusion_matrix(y, self.predict(X)))
+        return accuracy_score(y, self.predict(X), **args)
+
 
 
 class SVC(Base):
     """
     Support vector classification with random matrix (RFF/ORF).
     """
-    def __init__(self, rand_type, dim_kernel=128, std_kernel=0.1, W=None, b=None, multi_mode="ovr", n_jobs=-1, **args):
+    def __init__(self, rand_type, dim_kernel=128, std_kernel=0.1, W=None, b=None, multi_mode="ovr", n_jobs=-1 , oc = False, dist= None, **args):
         """
         Constractor. Save hyper parameters as member variables and create LinearSVC instance.
         The LinearSVC instance is always wrappered by multiclass classifier.
@@ -26,11 +54,17 @@ class SVC(Base):
             b          (np.ndarray): Random bias for the input `X`. If None then generated automatically.
             multi_mode (str)       : Treatment of multi-class ("ovr" or "ovo").
             n_jobs     (int)       : The number of jobs to run in parallel.
+            oc         (bool)      : If True, the classifier is treated as one-class classification.
             args       (dict)      : Extra arguments. This will be passed to scikit-learn's
                                      LinearSVC class constructor.
         """
-        super().__init__(rand_type, dim_kernel, std_kernel, W, b)
-        self.svm = self.set_classifier(sklearn.svm.LinearSVC(**args), multi_mode, n_jobs)
+        super().__init__(rand_type, dim_kernel, std_kernel, W, b, dist)
+        self.oc = oc
+        if oc:
+            print('One class classifier is being used')
+            self.svm = CustomOneClassSVM(**args)
+        else:
+            self.svm = self.set_classifier(sklearn.svm.LinearSVC(**args), multi_mode, n_jobs)
 
     def set_classifier(self, svm, multi_mode, n_jobs):
         """
@@ -45,7 +79,7 @@ class SVC(Base):
             (sklearn.base.BaseEstimator): Multi-class classifier instance.
         """
 
-        elif   multi_mode == "ovo": classifier = sklearn.multiclass.OneVsOneClassifier
+        if   multi_mode == "ovo": classifier = sklearn.multiclass.OneVsOneClassifier
         elif multi_mode == "ovr": classifier = sklearn.multiclass.OneVsRestClassifier
         else                    : classifier = sklearn.multiclass.OneVsRestClassifier
         return classifier(svm, n_jobs = n_jobs)
@@ -123,12 +157,24 @@ class SVC(Base):
         self.set_weight(X.shape[1])
         return self.svm.score(self.conv(X), y, **args)
 
+    def decision_function(self, X):
+        """
+        Returns the decision function of the input samples.
+
+        Args:
+            X (np.ndarray): Input matrix with shape (n_samples, n_features_input).
+
+        Returns:
+            (np.ndarray): The decision function of the input samples.
+        """
+        self.set_weight(X.shape[1])
+        return self.svm.decision_function(self.conv(X))
 
 class BatchSVC:
     """
     Batch training extention of the support vector classification.
     """
-    def __init__(self, rand_type, dim_kernel, std_kernel, num_epochs=10, num_batches=10, alpha=0.05):
+    def __init__(self, rand_type, dim_kernel, std_kernel, num_epochs=10, num_batches=10, alpha=0.05, oc = False, **args):
         """
         Constractor. Save hyper parameters as member variables and create LinearSVC instance.
         The LinearSVC instance is always wrappered by multiclass classifier.
@@ -142,6 +188,7 @@ class BatchSVC:
             alpha       (float): Exponential moving average of each batch.
         """
         self.rtype   = rand_type
+        self.oc      = oc
         self.coef    = None
         self.icpt    = None
         self.W       = None
@@ -177,8 +224,10 @@ class BatchSVC:
         """
         # Create classifier instance
         if   self.rtype == "rff": svc = RFFSVC(self.dim, self.std, self.W, **args)
+        elif self.rtype == "cus": svc = CUSSVC(self.dim, self.std, self.W, **args)
         elif self.rtype == "orf": svc = ORFSVC(self.dim, self.std, self.W, **args)
-        else                    : raise RuntimeError("BatchSVC: 'rand_type' must be 'rff' or 'orf'.")
+
+        else                    : raise RuntimeError("BatchSVC: 'rand_type' must be 'rff' or 'orf' or 'cus'.")
 
         # Train SVM with random fourier features
         svc.fit(X, y)
@@ -268,6 +317,15 @@ class BatchSVC:
 # classes. The following classes are visible from users.
 
 
+class CUSSVC(SVC):
+    """
+    Support vector machine with RFF.
+    """
+    def __init__(self, *pargs, **kwargs):
+        super().__init__("cus", *pargs, **kwargs)
+
+
+
 class RFFSVC(SVC):
     """
     Support vector machine with RFF.
@@ -314,6 +372,14 @@ class QRFBatchSVC(BatchSVC):
     """
     def __init__(self, *pargs, **kwargs):
         super().__init__("qrf", *pargs, **kwargs)
+
+
+class CUSBatchSVC(BatchSVC):
+    """
+    Support vector machine with QRF.
+    """
+    def __init__(self, *pargs, **kwargs):
+        super().__init__("cus", *pargs, **kwargs)
 
 
 # Author: Tetsuya Ishikawa <tiskw111@gmail.com>
