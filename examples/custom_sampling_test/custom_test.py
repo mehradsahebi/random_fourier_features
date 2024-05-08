@@ -87,11 +87,11 @@ def main(args):
         rfflearn.seed(args["--seed"])
 
     if args["--dist"] == 'uniform':
-        p = np.ones((*[2*max_freq+1 for _ in range(dim)], 1))
+        p = np.ones((*[2*max_freq+1 for _ in range(dim)], ))
         p = p / np.sum(p)
         dist = p
     elif args["--dist"] == 'delta':
-        dist = np.zeros((*[2*max_freq+1 for _ in range(dim)], 1))
+        dist = np.zeros((*[2*max_freq+1 for _ in range(dim)], ))
         dist[tuple([max_freq for _ in range(dim)])] = 1
     else:
         dist = args["dist"]
@@ -109,7 +109,7 @@ def main(args):
         svc = rfflearn.QRFSVC(dim_kernel=args["--kdim"], std_kernel=args["--stdev"], tol=1.0E-3, n_jobs=args["--cpus"],
                               oc=args["--oc"])
     elif args["--rtype"] == "cus":
-        svc = rfflearn.CUSSVC(dim_kernel=args["--kdim"], std_kernel=args["--stdev"], tol=1.0E-3, n_jobs=args["--cpus"],
+        svc = rfflearn.CUSSVC(dim_kernel=args["--kdim"], tol=1.0E-3, n_jobs=args["--cpus"],
                               dist=dist, oc=args["--oc"])
     else:
         exit("Error: First argument must be 'kernel', 'rff' or 'orf'.")

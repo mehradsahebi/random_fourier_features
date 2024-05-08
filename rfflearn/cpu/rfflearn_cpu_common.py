@@ -24,7 +24,8 @@ def seed(seed):
 
 def get_custom_matrix(dim_in, dim_out, dist):
     n = dist.shape[0]
-    if len(dist.shape)-1 != dim_in:
+
+    if len(dist.shape) != dim_in:
         raise ValueError("The dimension of the distribution should be the same as the input dimension")
     print('custom matrix is being used')
     d = dim_in
@@ -163,7 +164,6 @@ class Base:
         self.rand_type = rand_type
         self.mat = get_matrix_generator(rand_type, std_kernel, dim_kernel, dist)
         self.W = W
-        print(self.W)
         self.b = b
 
     def conv(self, X, index=None):
@@ -211,6 +211,6 @@ class Base:
             self.b = tuple([np.random.uniform(0, 2 * np.pi, size=self.W.shape[1]) for _ in dim_in])
         else:
             self.b = np.random.uniform(0, 2 * np.pi, size=self.W.shape[1])
-
+        print(self.W.shape)
 # Author: Tetsuya Ishikawa <tiskw111@gmail.com>
 # vim: expandtab tabstop=4 shiftwidth=4 fdm=marker

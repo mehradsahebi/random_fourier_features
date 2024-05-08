@@ -64,7 +64,7 @@ class SVC(Base):
             print('One class classifier is being used')
             self.svm = CustomOneClassSVM(**args)
         else:
-            self.svm = self.set_classifier(sklearn.svm.LinearSVC(**args), multi_mode, n_jobs)
+            self.svm = self.set_classifier(sklearn.svm.LinearSVC(dual='auto',**args), multi_mode, n_jobs)
 
     def set_classifier(self, svm, multi_mode, n_jobs):
         """
@@ -157,6 +157,21 @@ class SVC(Base):
         self.set_weight(X.shape[1])
         return self.svm.score(self.conv(X), y, **args)
 
+    def loss(self, X, y, **args):
+        """
+        Return the loss of the input samples.
+
+        Args:
+            X    (np.ndarray): Input matrix with shape (n_samples, n_features_input).
+            y    (np.ndarray): Output vector with shape (n_samples,).
+            args (dict)      : Extra arguments. This arguments will be passed to scikit-learn's `loss` function.
+
+        Returns:
+            (float): The loss of the input samples.
+        """
+        self.set_weight(X.shape[1])
+        return sklearn.metrics.hinge_loss(self.predict(X),y)
+
     def decision_function(self, X):
         """
         Returns the decision function of the input samples.
@@ -174,7 +189,7 @@ class BatchSVC:
     """
     Batch training extention of the support vector classification.
     """
-    def __init__(self, rand_type, dim_kernel, std_kernel, num_epochs=10, num_batches=10, alpha=0.05, oc = False, **args):
+    def __init__(self, rand_type, dim_kernel, std_kernel=1, num_epochs=10, num_batches=10, alpha=0.05, oc = False, **args):
         """
         Constractor. Save hyper parameters as member variables and create LinearSVC instance.
         The LinearSVC instance is always wrappered by multiclass classifier.
@@ -322,7 +337,7 @@ class CUSSVC(SVC):
     Support vector machine with RFF.
     """
     def __init__(self, *pargs, **kwargs):
-        super().__init__("cus", *pargs, **kwargs)
+        super().__init__("cus",std_kernel=1, *pargs, **kwargs)
 
 
 
@@ -379,7 +394,7 @@ class CUSBatchSVC(BatchSVC):
     Support vector machine with QRF.
     """
     def __init__(self, *pargs, **kwargs):
-        super().__init__("cus", *pargs, **kwargs)
+        super().__init__("cus", std_kernel=1, *pargs, **kwargs)
 
 
 # Author: Tetsuya Ishikawa <tiskw111@gmail.com>
