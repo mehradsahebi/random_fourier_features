@@ -31,8 +31,8 @@ class CustomOneClassSVM(OneClassSVM):
         Returns:
             (float): Classification accyracy.
         """
-        print('-------')
-        print(confusion_matrix(y, self.predict(X)))
+        #print('-------')
+        #print(confusion_matrix(y, self.predict(X)))
         return accuracy_score(y, self.predict(X), **args)
 
 
@@ -41,13 +41,13 @@ class SVC(Base):
     """
     Support vector classification with random matrix (RFF/ORF).
     """
-    def __init__(self, rand_type, dim_kernel=128, std_kernel=0.1, W=None, b=None, multi_mode="ovr", n_jobs=-1 , oc = False, dist= None, **args):
+    def __init__(self, rand_type, dim_kernel=128, std_kernel=0.1, W=None,b=None,  multi_mode="ovr", n_jobs=-1 , oc = False, dist= None, dist_kron = False, **args):
         """
         Constractor. Save hyper parameters as member variables and create LinearSVC instance.
         The LinearSVC instance is always wrappered by multiclass classifier.
 
         Args:
-            rand_type  (str)       : Type of random matrix ("rff", "orf", "qrf", etc).
+            rand_type  (str)       : Type of random matrix ("rff", "orf", "qrf", "cus").
             dim_kernel (int)       : Dimension of the random matrix.
             std_kernel (float)     : Standard deviation of the random matrix.
             W          (np.ndarray): Random matrix for the input `X`. If None then generated automatically.
@@ -55,6 +55,7 @@ class SVC(Base):
             multi_mode (str)       : Treatment of multi-class ("ovr" or "ovo").
             n_jobs     (int)       : The number of jobs to run in parallel.
             oc         (bool)      : If True, the classifier is treated as one-class classification.
+            dist       (str)       : Distribution of the frequencies.
             args       (dict)      : Extra arguments. This will be passed to scikit-learn's
                                      LinearSVC class constructor.
         """
@@ -97,6 +98,7 @@ class SVC(Base):
             (rfflearn.cpu.SVC): Myself.
         """
         self.set_weight(X.shape[1])
+        #print('shape conv is:',self.conv(X).shape)
         self.svm.fit(self.conv(X), y, **args)
         return self
 
@@ -152,7 +154,7 @@ class SVC(Base):
             args (dict)      : Extra arguments. This arguments will be passed to scikit-learn's `score` function.
 
         Returns:
-            (float): Classification accyracy.
+            (float): Classification accuracy.
         """
         self.set_weight(X.shape[1])
         return self.svm.score(self.conv(X), y, **args)
@@ -339,7 +341,12 @@ class CUSSVC(SVC):
     def __init__(self, *pargs, **kwargs):
         super().__init__("cus",std_kernel=1, *pargs, **kwargs)
 
-
+class KRONSVC(SVC):
+    """
+    Support vector machine with RFF.
+    """
+    def __init__(self, *pargs, **kwargs):
+        super().__init__("kron",std_kernel=1, *pargs, **kwargs)
 
 class RFFSVC(SVC):
     """

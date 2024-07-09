@@ -28,7 +28,7 @@ Options:
     gpu              Run RFF SVM on GPU.
     --input <str>    Directory path to the MNIST dataset.                [default: ../../dataset/mnist]
     --output <str>   File path to the output pickle file.                [default: result.pickle]
-    --pcadim <int>   Output dimention of Principal Component Analysis.   [default: 128]
+    --pcadim <int>   Output dimension of Principal Component Analysis.   [default: 128]
     --kernel <str>   Hyper parameter of kernel SVM (type of kernel).     [default: rbf]
     --gamma <float>  Hyper parameter of kernel SVM (softness of kernel). [default: auto]
     --C <float>      Hyper parameter of kernel SVM (margin allowance).   [default: 1.0]
@@ -146,9 +146,9 @@ if __name__ == "__main__":
 
     ### Parse input arguments.
     # args = docopt.docopt(__doc__)
-    args = dict({'--n_samples': 5000, '--dim': 1, '--max_freq': 10,"cpu": True, "--seed": 111, "kernel": False, '--rtype': 'cus', '--kdim': 25 , '--stdev': 0.05, '--cpus': -1,
+    args = dict({'--n_samples': 5000, '--dim': 1, '--max_freq': 10,"cpu": True, "--seed": 111, "kernel": False, '--rtype': 'cus', '--kdim': 35 , '--stdev': 0.05, '--cpus': -1,
                  '--use_fft': False, '--input': '../../dataset/mnist', '--output': 'result.pickle', '--pcadim': 256,
-                 '--kernel': 'rbf', '--gamma': 'auto', '--C': 1.0, '--oc': False, '--dist': 'delta'})
+                 '--kernel': 'rbf', '--gamma': 'auto', '--C': 1.0, '--oc': False, '--dist': 'uniform'})
     import sys
     from pathlib import Path
 

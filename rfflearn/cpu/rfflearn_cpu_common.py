@@ -23,18 +23,39 @@ def seed(seed):
 
 
 def get_custom_matrix(dim_in, dim_out, dist):
-    n = dist.shape[0]
+    n = dist.shape
 
     if len(dist.shape) != dim_in:
-        raise ValueError("The dimension of the distribution should be the same as the input dimension")
+        print(dist.shape, dim_in)
+        raise ValueError("Dimension of the distribution should be the same as the input dimension")
     print('custom matrix is being used')
     d = dim_in
-    temp = np.array([i - n // 2 for i in range(n)])
-    a = np.array(list(product(temp, repeat=d)))
+    temp = [np.array([i - nt // 2 for i in range(nt)]) for nt in n]
+    a = np.array(list(product(*temp)))
     population = np.arange(len(a))
-    idx = choices(population, dist.flatten(), k=dim_out)
+    idx = choices(population, weights = dist.flatten(), k=dim_out)
     return a[idx].T
 
+def get_kron_matrix(dim_in, dim_out, dist):
+    """
+    Generates random matrix of seperable distributions.
+
+    Args:
+        dim_in  (int)  : Input dimension of the random matrix.
+        dim_out (int)  : Output dimension of the random matrix.
+        dist       (list)  : Number of frequencies to sample.
+
+    Returns:
+        (np.ndarray): Random matrix with shape (dim_out, dim_in).
+    """
+    n = [len(dist[i]) for i in range(len(dist))]
+    if len(n) != dim_in:
+        print(len(n), dim_in)
+        raise ValueError("Dimension of the distribution should be the same as the input dimension")
+    freqs = [np.array([i - nt // 2 for i in range(nt)]) for nt in n]
+    print('kron matrix is being used')
+    W = np.array([choices(freqs[j], weights = dist[j], k= dim_out) for j in range(dim_in)])
+    return W
 
 def get_rff_matrix(dim_in, dim_out, std, **args):
     """
@@ -132,9 +153,11 @@ def get_matrix_generator(rand_type, std, dim_kernel, dist=None):
     elif rand_type == "qrf":
         return functools.partial(get_qrf_matrix, std=std, dim_out=dim_kernel)
     elif rand_type == "cus":
-        return functools.partial(get_custom_matrix, dim_out=dim_kernel, dist= dist)
+        return functools.partial(get_custom_matrix, dim_out=dim_kernel)
+    elif rand_type == "kron":
+        return functools.partial(get_kron_matrix, dim_out=dim_kernel)
     else:
-        raise RuntimeError("matrix_generator: 'rand_type' must be 'rff', 'orf', or 'qrf' or 'cus'.")
+        raise RuntimeError("matrix_generator: 'rand_type' must be 'rff', 'orf', or 'qrf' or 'cus', 'kron'.")
 
 
 class Base:
@@ -164,7 +187,7 @@ class Base:
         self.rand_type = rand_type
         self.mat = get_matrix_generator(rand_type, std_kernel, dim_kernel, dist)
         self.W = W
-        self.b = b
+
 
     def conv(self, X, index=None):
         """
@@ -182,8 +205,7 @@ class Base:
             consumption, split X to smaller matrices and concatenate after multiplication wit W.
         """
         W = self.W if index is None else self.W[index]
-        b = self.b if index is None else self.b[index]
-        return np.cos(X @ W + b)
+        return np.concatenate((np.cos(X @ W ), np.sin(X @ W)), axis=1)
 
     def set_weight(self, dim_in):
         """
@@ -205,12 +227,6 @@ class Base:
             self.W = self.mat(dim_in, dist=self.dist)
 
         # Generate vector b.
-        if self.b is not None:
-            pass
-        elif hasattr(dim_in, "__iter__"):
-            self.b = tuple([np.random.uniform(0, 2 * np.pi, size=self.W.shape[1]) for _ in dim_in])
-        else:
-            self.b = np.random.uniform(0, 2 * np.pi, size=self.W.shape[1])
-        print(self.W.shape)
+        #print(self.W.shape)
 # Author: Tetsuya Ishikawa <tiskw111@gmail.com>
 # vim: expandtab tabstop=4 shiftwidth=4 fdm=marker
