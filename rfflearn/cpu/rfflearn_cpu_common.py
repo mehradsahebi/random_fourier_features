@@ -9,7 +9,8 @@ import numpy as np
 import scipy.stats
 from itertools import product
 from random import choices
-
+import random
+random.seed(111)
 
 def seed(seed):
     """
@@ -24,7 +25,6 @@ def seed(seed):
 
 def get_custom_matrix(dim_in, dim_out, dist):
     n = dist.shape
-
     if len(dist.shape) != dim_in:
         print(dist.shape, dim_in)
         raise ValueError("Dimension of the distribution should be the same as the input dimension")

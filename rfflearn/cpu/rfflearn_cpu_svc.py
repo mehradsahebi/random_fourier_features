@@ -41,7 +41,7 @@ class SVC(Base):
     """
     Support vector classification with random matrix (RFF/ORF).
     """
-    def __init__(self, rand_type, dim_kernel=128, std_kernel=0.1, W=None,b=None,  multi_mode="ovr", n_jobs=-1 , oc = False, dist= None, dist_kron = False, **args):
+    def __init__(self, rand_type, dim_kernel=128, std_kernel=0.1, W=None,b=None,  multi_mode="ovr", n_jobs=-1 , oc = False, dist= None, **args):
         """
         Constractor. Save hyper parameters as member variables and create LinearSVC instance.
         The LinearSVC instance is always wrappered by multiclass classifier.
