@@ -3,7 +3,7 @@ Python module of regression with random matrix for CPU.
 """
 
 import sklearn
-
+from sklearn.metrics import mean_squared_error
 from .rfflearn_cpu_common import Base
 
 
@@ -11,7 +11,7 @@ class Regression(Base):
     """
     Regression with random matrix (RFF/ORF).
     """
-    def __init__(self, rand_type, dim_kernel=16, std_kernel=0.1, W=None, b=None, **args):
+    def __init__(self, rand_type, dim_kernel=16, std_kernel=0.1, W=None, b=None, dist=None  ,**args):
         """
         Constractor. Save hyper parameters as member variables and create LinearRegression instance.
 
@@ -21,9 +21,10 @@ class Regression(Base):
             std_kernel (float)     : Standard deviation of the random matrix.
             W          (np.ndarray): Random matrix for the input `X`. If None then generated automatically.
             b          (np.ndarray): Random bias for the input `X`. If None then generated automatically.
+            dist       (str)       : Distribution of the random matrix ("gaussian", "uniform", etc).
             args       (dict)      : Extra arguments. This arguments will be passed to the constructor of sklearn's LinearRegression model.
         """
-        super().__init__(rand_type, dim_kernel, std_kernel, W, b)
+        super().__init__(rand_type, dim_kernel, std_kernel, W, b, dist)
         self.reg = sklearn.linear_model.LinearRegression(**args)
 
     def fit(self, X, y, **args):
@@ -70,6 +71,20 @@ class Regression(Base):
         """
         self.set_weight(X.shape[1])
         return self.reg.score(self.conv(X), y, **args)
+    def loss(self, X, y):
+        """
+        Returns the mean squared error of the prediction.
+
+        Args:
+            X    (np.ndarray): Input matrix with shape (n_samples, n_features_input).
+            y    (np.ndarray): Output vector with shape (n_samples,).
+            args (dict)      : Extra arguments. This arguments will be passed to sklearn's `score` function.
+
+        Returns:
+            (float): Mean squared error of the prediction.
+        """
+        self.set_weight(X.shape[1])
+        return mean_squared_error(y, self.predict(X))
 
 
 # The above functions/classes are not visible from users of this library, becasue the usage of

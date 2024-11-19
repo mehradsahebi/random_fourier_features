@@ -65,6 +65,7 @@ class SVC(Base):
             print('One class classifier is being used')
             self.svm = CustomOneClassSVM(**args)
         else:
+            #self.svm = sklearn.svm.LinearSVC(dual='auto',**args)
             self.svm = self.set_classifier(sklearn.svm.LinearSVC(dual='auto',**args), multi_mode, n_jobs)
 
     def set_classifier(self, svm, multi_mode, n_jobs):
