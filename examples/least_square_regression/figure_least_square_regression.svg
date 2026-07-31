@@ -1451,7 +1451,7 @@ L 91.39 195.460312
 " style="fill: none; stroke: #2ca02c; stroke-width: 1.5; stroke-linecap: square"/>
     </g>
     <g id="text_22">
-     <!-- Prediction by RFF regression -->
+     <!-- Prediction by RFF Kernel_regression -->
      <g transform="translate(99.39 198.960312) scale(0.1 -0.1)">
       <defs>
        <path id="DejaVuSans-50" d="M 1259 4147 

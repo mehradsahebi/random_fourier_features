@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 #
 # This Python script provides an example usage of RFFRegression class which is a class
-# for least square regression using RFF. Interface of RFFRegression is quite close to
+# for least square Kernel_regression using RFF. Interface of RFFRegression is quite close to
 # sklearn.linear_model.LinearRegression.
 #################################### SOURCE START ###################################
 
 """
 Overview:
-  Train Random Fourier Feature least square regression and plot results.
+  Train Random Fourier Feature least square Kernel_regression and plot results.
 
 Usage:
     main_rff_regression.py [--random_type <str>] [--kdim <int>] [--std_kernel <float>]
@@ -50,7 +50,7 @@ def main(args):
         Xs_test  = np.linspace(0, 3, args["--n_test"]).reshape((args["--n_test"], 1))
         ys_test  = np.sin(Xs_test**2)
 
-    # Train regression with random fourier features
+    # Train Kernel_regression with random fourier features
     with utils.Timer("Train regressor: "):
         reg.fit(Xs_train, ys_train)
 
@@ -58,7 +58,7 @@ def main(args):
     with utils.Timer("Prediction: "):
         predict = reg.predict(Xs_test)
 
-    # Plot regression results
+    # Plot Kernel_regression results
     mpl.figure(figsize=(6, 3.5))
     mpl.title("Regression for function y = sin(x^2) with RFF")
     mpl.xlabel("X")
@@ -66,7 +66,7 @@ def main(args):
     mpl.plot(Xs_train, ys_train, "o")
     mpl.plot(Xs_test,  ys_test,  ".")
     mpl.plot(Xs_test,  predict,  "-")
-    mpl.legend(["Training data", "Test data", "Prediction by RFF regression"])
+    mpl.legend(["Training data", "Test data", "Prediction by RFF Kernel_regression"])
     mpl.grid()
     mpl.tight_layout()
     mpl.show()

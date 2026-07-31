@@ -1,5 +1,5 @@
 """
-Python module of regression with random matrix for CPU.
+Python module of Kernel_regression with random matrix for CPU.
 """
 
 import sklearn
@@ -29,7 +29,7 @@ class Regression(Base):
 
     def fit(self, X, y, **args):
         """
-        Trains the RFF regression model according to the given data.
+        Trains the RFF Kernel_regression model according to the given data.
 
         Args:
             X    (np.ndarray): Input matrix with shape (n_samples, n_features_input).

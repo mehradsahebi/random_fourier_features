@@ -130,7 +130,7 @@ class GPR(Base):
             y_cpu (np.ndarray): Test label with shape (n_samples, n_features_out).
 
         Returns:
-            (float): R2 score of regression.
+            (float): R2 score of Kernel_regression.
         """
         return sklearn.metrics.r2_score(y_cpu, self.predict(X_cpu))
 
@@ -196,7 +196,7 @@ class GPC(GPR):
 
 class RFFGPR(GPR):
     """
-    Gaussian process regression with RFF.
+    Gaussian process Kernel_regression with RFF.
     """
     def __init__(self, *pargs, **kwargs):
         super().__init__("rff", *pargs, **kwargs)
@@ -204,7 +204,7 @@ class RFFGPR(GPR):
 
 class ORFGPR(GPR):
     """
-    Gaussian process regression with ORF.
+    Gaussian process Kernel_regression with ORF.
     """
     def __init__(self, *pargs, **kwargs):
         super().__init__("orf", *pargs, **kwargs)
@@ -212,7 +212,7 @@ class ORFGPR(GPR):
 
 class QRFGPR(GPR):
     """
-    Gaussian process regression with Quasi-RFF.
+    Gaussian process Kernel_regression with Quasi-RFF.
     """
     def __init__(self, *pargs, **kwargs):
         super().__init__("qrf", *pargs, **kwargs)

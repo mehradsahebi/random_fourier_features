@@ -80,7 +80,7 @@ def main(args):
 
     print("R2 score:", gpr.score(Xs_test, ys_test))
 
-    # Plot regression results.
+    # Plot Kernel_regression results.
     with utils.Timer("Drawing figure: "):
         mpl.figure(figsize=(6, 3.5))
         mpl.title("Regression of y = sin(x^2) using Gaussian Process w/ RFF")

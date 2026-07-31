@@ -71,7 +71,7 @@ def main(args):
     shap_values = rfflearn.shap_feature_importance(model, Xs_test)
     perm_values = rfflearn.permutation_feature_importance(model, Xs_test, ys_test)
 
-    # Draw regression result.
+    # Draw Kernel_regression result.
     mpl.figure(figsize=(6, 3.5))
     mpl.scatter(pred_test, ys_test, alpha=0.2)
     mpl.plot([0, 5], [0, 5], "--", color="#666666")

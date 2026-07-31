@@ -1,5 +1,5 @@
 """
-Python module of support vector regression with random matrix for CPU.
+Python module of support vector Kernel_regression with random matrix for CPU.
 """
 
 import sklearn.svm
@@ -10,7 +10,7 @@ from .rfflearn_cpu_common import Base
 
 class SVR(Base):
     """
-    Support vector regression with random matrix (RFF/ORF).
+    Support vector Kernel_regression with random matrix (RFF/ORF).
     """
     def __init__(self, rand_type, dim_kernel=128, std_kernel=0.1, W=None, b=None, **args):
         """
@@ -45,7 +45,7 @@ class SVR(Base):
 
     def predict(self, X, **args):
         """
-        Performs regression on the given data.
+        Performs Kernel_regression on the given data.
 
         Args:
             X    (np.ndarray): Input matrix with shape (n_samples, n_features_input).

@@ -297,7 +297,7 @@ class SVC(Base):
 
 class RFFSVC(SVC):
     """
-    Gaussian process regression with RFF.
+    Gaussian process Kernel_regression with RFF.
     """
     def __init__(self, *pargs, **kwargs):
         super().__init__("rff", *pargs, **kwargs)
@@ -305,7 +305,7 @@ class RFFSVC(SVC):
 
 class ORFSVC(SVC):
     """
-    Gaussian process regression with ORF.
+    Gaussian process Kernel_regression with ORF.
     """
     def __init__(self, *pargs, **kwargs):
         super().__init__("orf", *pargs, **kwargs)
@@ -313,7 +313,7 @@ class ORFSVC(SVC):
 
 class QRFSVC(SVC):
     """
-    Gaussian process regression with quasi-RRF.
+    Gaussian process Kernel_regression with quasi-RRF.
     """
     def __init__(self, *pargs, **kwargs):
         super().__init__("qrf", *pargs, **kwargs)

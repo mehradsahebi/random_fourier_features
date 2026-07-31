@@ -57,7 +57,7 @@ class GPR(Base):
 
     def predict(self, X, return_std=False, return_cov=False):
         """
-        Performs regression on the given data.
+        Performs Kernel_regression on the given data.
 
         Args:
             X          (np.ndarray): Input matrix with shape (n_samples, n_features_input).
@@ -211,7 +211,7 @@ class GPC(GPR):
 
 class RFFGPR(GPR):
     """
-    Gaussian process regression with RFF.
+    Gaussian process Kernel_regression with RFF.
     """
     def __init__(self, *pargs, **kwargs):
         super().__init__("rff", *pargs, **kwargs)
@@ -219,7 +219,7 @@ class RFFGPR(GPR):
 
 class ORFGPR(GPR):
     """
-    Gaussian process regression with ORF.
+    Gaussian process Kernel_regression with ORF.
     """
     def __init__(self, *pargs, **kwargs):
         super().__init__("orf", *pargs, **kwargs)
@@ -227,7 +227,7 @@ class ORFGPR(GPR):
 
 class QRFGPR(GPR):
     """
-    Gaussian process regression with QRF.
+    Gaussian process Kernel_regression with QRF.
     """
     def __init__(self, *pargs, **kwargs):
         super().__init__("qrf", *pargs, **kwargs)
